@@ -8,6 +8,8 @@ FileCrafterX is a powerful and scalable API-based Document Management System tha
 
 - 📤 Upload files with metadata to Cloudinary
 
+- 🛡 Implemented JWT authentication so that only authenticated user can upload a file.
+
 - 🔄 Manage files and folders (delete, update, and read operations)
 
 - 🔍 Sort files by size or upload date
@@ -28,122 +30,289 @@ FileCrafterX is a powerful and scalable API-based Document Management System tha
 
 - 🛢 Supabase PostgreSQL – Database
 
+- 🛡 JWT Authentication
+
 # 🔗 API Endpoints
 
-📂 Folder Management
+## 📂 Folder Management
 
-- ➕ Create a Folder
+### ➕ Create a Folder
 
-Endpoint: POST /folder/create
+#### Description: Creates a new folder with optional restrictions.
 
-Description: Creates a new folder with optional restrictions.
+#### Endpoint: POST /folders/create
+
+#### Request Payload: 
+``` 
+{
+  "name": "Project Docs",
+  "type": "pdf",
+  "maxFileLimit": 10
+}
+``` 
+
+#### Expected Reponse:
+``` 
+{ 
+   "message": "Folder created successfully", 
+   "folder": { 
+         "folderId": "FOLDER_ID_UUID_FORMAT", 
+         "name": "Project Docs", 
+         "type": "pdf", 
+         "maxFileLimit": 10 
+      } 
+   } 
+```
+
+
 
 ---
 
-- ✏️ Update a Folder
+### ✏️ Update a Folder
 
-Endpoint: PUT /folders/:folderId
+#### Description: Updates folder metadata.
 
-Description: Updates folder metadata.
+#### Endpoint: PUT /folders/:folderId
+
+#### Request Payload: 
+``` 
+{
+  "name": "Updated Folder Name",
+  "maxFileLimit": 15
+}  
+```
+
+#### Expected Reponse:
+```
+{
+  'message': 'Folder updated successfully',
+  'folder': {
+    'folderId': 'FOLDER_ID_UUID_FORMAT',
+    'name': 'Updated Folder Name',
+    'type': 'csv',
+    'maxFileLimit': 15
+  }
+}
+```
 
 ---
 
-- 🗑 Delete a Folder
+### 🗑 Delete a Folder
 
-Endpoint: DELETE /folders/:folderId
+#### Endpoint: DELETE /folders/:folderId
 
-Description: Deletes a folder and all its files from Cloudinary.
+#### Description: Deletes a folder and all its files from Cloudinary as well as from database.
 
 ---
 
-- 📜 Get All Folders
+### 📜 Get All Folders
 
-Endpoint: GET /folders
+#### Endpoint: GET /folders
 
-Description: Fetches a list of all folders.
+#### Description: Fetches a list of all folders.
+
+#### Expected Response:
+```
+{
+  "folders": [
+    {
+      "folderId": "FOLDER_ID_UUID_FORMAT",
+      "name": "csv_folder",
+      "type": "csv",
+      "maxFileLimit": 5
+    },
+    {
+      "folderId": "FOLDER_ID_UUID_FORMAT",
+      "name": "pdf_folder",
+      "type": "pdf",
+      "maxFileLimit": 3
+    },
+    {
+      "folderId": "FOLDER_ID_UUID_FORMAT",
+      "name": "image_folder",
+      "type": "img",
+      "maxFileLimit": 3
+    }
+  ]
+}
+```
 
 # 📄 File Management
 
-- 📤 Upload a File
+## 📤 Upload a File
 
-Endpoint: POST /folders/:folderId/files
+*** Important: Generate a jwt token by running ```node jwt.js``` in terminal then paste the generated token in Postman under Header > Authorization as ```Bearer <token>``` before making this request.
 
-Description: Uploads a file to Cloudinary using Multer.
+Upload file in postman under Body > form-data: ```file : <uploaded file> ``` and paste request payload as ```data : {request_payload_data} ```
+
+### Endpoint: POST /folder-files/:folderId/files
+
+Description: Uploads a file to Cloudinary using Multer and insert in database as well.
+
+### Request Payload:
+```
+{
+  'file': 'file_to_upload.csv',
+  'description': 'Monthly budget report'
+}
+```
+
+### Expected Response:
+```
+{
+  'message': 'File uploaded successfully',
+  'file': {
+    'fileId': 'FILE_ID_UUID_FORMAT',
+    'uploadedAt': '2024-11-13T08:23:59.443Z',
+    'name': 'file_to_upload.csv',
+    'type': 'application/csv',
+    'size': 60146,
+    'folderId': 'FOLDER_ID_UUID_FORMAT',
+    'description': 'Monthly new report'
+  }
+}
+```
+---
+
+## 📝 Update File Description
+
+#### Endpoint: PUT /folder-files/:folderId/files/:fileId
+#### Description: Updates the description of a file.
+#### Request Payload:
+```
+{
+  'description': 'Updated description for the file'
+}
+```
+#### Expected Response:
+```
+{
+  'message': 'File description updated successfully',
+  'files': {
+    'fileId': 'FILE_ID_UUID_FORMAT',
+    'description': 'Updated description for the file'
+  }
+}
+```
+---
+
+## 🗑 Delete a File
+
+#### Endpoint: DELETE /folder-files/:folderId/files/:fileId
+
+#### Description: Deletes a file of a folder from Cloudinary and database.
+
 
 ---
 
-- 📝 Update File Description
+## 📂 Get Files from a Folder
 
-Endpoint: PUT /folders/:folderId/files/:fileId
+#### Endpoint: GET /folder-files/:folderId/files
 
-Description: Updates the description of a file.
+#### Description: Retrieves all files within a specific folder.
+
+#### Expected Response:
+```
+{
+  "files": [
+    {
+      "fileId": "3a9f4aef-64a0-4b67-b582-86db466f4179",
+      "folderId": "ccc7a763-7709-4161-8314-2b8423d7626f",
+      "publicId": "m4rdgwxw5chrambrscwf",
+      "name": "marwari_slogan.png",
+      "description": "It is marwari slogan",
+      "type": "image/png",
+      "size": 2974419,
+      "uploadedAt": "2025-06-08T07:36:19.295Z"
+    },
+    {
+      "fileId": "028d9f82-5644-4405-8550-1572a9e8be8c",
+      "folderId": "ccc7a763-7709-4161-8314-2b8423d7626f",
+      "publicId": "twx6gbxc7pzng03rozfo",
+      "name": "zenitsu-agatsuma.png",
+      "description": "Thunder hashira",
+      "type": "image/png",
+      "size": 2552235,
+      "uploadedAt": "2025-06-08T07:49:14.415Z"
+    },
+    {
+      "fileId": "7ebae8f4-36d7-47f4-89e9-24ce21058d55",
+      "folderId": "ccc7a763-7709-4161-8314-2b8423d7626f",
+      "publicId": "w7mn9ytczzjyhkr6f2ib",
+      "name": "java_dsa.png",
+      "description": "It is a jawa dsa certificate",
+      "type": "image/png",
+      "size": 174744,
+      "uploadedAt": "2025-06-08T07:53:15.696Z"
+    }
+  ]
+}
+```
 
 ---
 
-- 🗑 Delete a File
+## 🔄 Retrieve sorted files by size and recency(uploadedAt).
 
-Endpoint: DELETE /folders/:folderId/files/:fileId
+#### Endpoint: GET /folder-files/:folderId/filesBySort?sort=size or sort=uploadedAt
 
-Description: Deletes a file from Cloudinary.
-
----
-
-- 📂 Get Files in a Folder
-
-Endpoint: GET /folders/:folderId/files
-
-Description: Retrieves all files within a specific folder.
+#### Description: Sorts files by size or recency.
 
 ---
 
-- 🔄 Sort Files in a Folder
+## 🔍 Get Files by Type Across Folders
 
-Endpoint: GET /folders/:folderId/filesBySort?sort=size or sort=uploadedAt
+#### Endpoint: GET /files?type=pdf
 
-Description: Sorts files by size or recency.
-
----
-
-- 🔍 Get Files by Type Across Folders
-
-Endpoint: GET /files?type=pdf
-
-Description: Fetches files of a specific type from all folders.
+#### Description: Fetches files of a specific type from all folders.
 
 ---
 
-- 🏷 Get File Metadata
+## 🏷 Get File Metadata
 
-Endpoint: GET /folders/:folderId/files/metadata
+#### Endpoint: GET /folders/:folderId/files/metadata
 
-Description: Retrieves metadata of files within a folder.
+#### Description: Retrieves metadata of files within a folder.
 
 ---
 
 # ⚙️ Installation & Setup
 
-- 📥 Clone the Repository
+ ### 📥 Clone the Repository
+```
+git clone https://github.com/y-jaga/FileCrafterX.git 
+cd File-Crafter-X
+```
 
-git clone https://github.com/y-jaga/File-Crafter-Edge.git  
-cd File-Crafter-Edge
-
-- 📦 Install Dependencies
+ ### 📦 Install Dependencies
 
 npm install
 
-- 🛠 Set Up Environment Variables
-  Create a .env file and add:
+#### 🛠 Set Up Environment Variables
+*Important: Generate JWT_SECRET bu running below command in terminal
+```
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+Create a .env file and add:
+```
+PORT = 3000
 
-DATABASE_URL=your_supabase_postgresql_url  
-DATABASE_HOST = your_supabase_postgresql_host  
-DATABASE_USER = your_supabase_postgresql_user  
-DATABASE_NAME = postgres  
-DATABASE_PASSWORD = your_supabase_postgresql_password
+#CLOUDINARY CONFIG
+CLOUDINARY_CLOUD_NAME = <YOUR_CLOUDINARY_CLOUD_NAME>
+CLOUDINARY_API_KEY = <YOUR_CLOUDINARY_API_KEY>
+CLOUDINARY_API_SECRET = <YOUR_CLOUDINARY_API_SECRET>
 
+#SUPABASE CONFIG
+DATABASE_URL = <YOUR_DATABASE_URL>
+DB_USER = <YOUR_DATABASE_USER>
+DB_NAME = <YOUR_DATABASE_NAME>
+DB_PASSWORD = <YOUR_DATABASE_PASSWORD>
+DB_HOST = <YOUR_DATABASE_HOST_NAME>
+
+#JWT
+JWT_SECRET = <YOUR_JWT_SECRET>
+```
 - ▶️ Run the Server
-
+```
 npm start
+```
