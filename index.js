@@ -9,22 +9,19 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-//folder related routes
+//folders related routes
 app.use("/folders", folderRoutes);
 
-//file related routes
+//files related routes
 app.use("/folder-files", fileRoutes);
 
 if (process.env.NODE_ENV !== "test") {
   sequelize
     .authenticate()
     .then(() =>
-      console.log("Database Connection has been established successfully.")
+      console.log("Database connection has been established successfully.")
     )
     .catch((err) => console.error("Unable to connect to the database:", err));
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+module.exports = { app };

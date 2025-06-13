@@ -12,17 +12,22 @@ const db = {};
 
 let sequelize;
 
-sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  {
-    host: config.host,
-    dialect: "postgres",
-    dialectModule: pg,
-  },
-  config
-);
+if (env === "test") {
+  sequelize = new Sequelize(config);
+  console.log("test connection established successfully.");
+} else {
+  sequelize = new Sequelize(
+    config.database,
+    config.username,
+    config.password,
+    {
+      host: config.host,
+      dialect: "postgres",
+      dialectModule: pg,
+    },
+    config
+  );
+}
 
 fs.readdirSync(__dirname)
   .filter((file) => {

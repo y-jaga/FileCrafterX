@@ -22,7 +22,6 @@ const createFolder = async (req, res) => {
       .status(201)
       .json({ message: "Folder created successfully", folder: response });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };
