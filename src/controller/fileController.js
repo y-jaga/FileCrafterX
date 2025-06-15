@@ -46,8 +46,6 @@ const uploadFile = async (req, res) => {
     //fetch public_id from cloudinary response
     fileData.publicId = cloudinaryResponse.public_id;
 
-    console.log(cloudinaryResponse);
-
     const response = await File.create(fileData);
     res.status(201).json({
       message: "File uploaded successfully",

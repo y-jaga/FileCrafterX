@@ -199,7 +199,7 @@ describe("File controller tests", () => {
       folderId,
       name: "file_to_upload.pdf",
       type: "application/pdf",
-      size: 10,
+      size: 11,
       description: "Monthly new report",
     };
 
@@ -228,9 +228,15 @@ describe("File controller tests", () => {
       api_key: "587866885867884",
     };
 
-    //create a mock file to upload in uploads folder
-    const dummyFilePath = path.resolve("uploads/file_to_upload.pdf");
-    fs.writeFileSync(dummyFilePath, "dummy data");
+    //create a uploads folder if not exists and create mock file to upload in uploads folder
+    const uploadsFolderPath = path.resolve(process.cwd() + "/uploads");
+    if (!fs.existsSync(uploadsFolderPath)) {
+      fs.mkdirSync(uploadsFolderPath);
+    }
+    const uploadFilePath = path.resolve(
+      uploadsFolderPath + "/file_to_upload.pdf"
+    );
+    fs.writeFileSync(uploadFilePath, "sample text");
 
     //mock file data to pass in request body
     const mockFileData = {
@@ -256,7 +262,7 @@ describe("File controller tests", () => {
         "Authorization",
         "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZXNzb24iOiJjbG91ZGluYXJ5VXBsb2FkIiwiaWF0IjoxNzQ5NTUzNjk4LCJleHAiOjE3NDk1NjA4OTh9.azzsZbw-CHyp5r5nPNbFAEUBlCCUW89lDw3GRIYA8ZI"
       )
-      .attach("files", dummyFilePath)
+      .attach("files", uploadFilePath)
       .field("data", JSON.stringify(mockFileData));
 
     expect(response.statusCode).toBe(201);
@@ -264,7 +270,7 @@ describe("File controller tests", () => {
     expect(response.body.file).toMatchObject(mockResponse);
 
     //remove dummy file from uploads folder
-    fs.unlinkSync(dummyFilePath);
+    fs.unlinkSync(uploadFilePath);
   });
 
   it("PUT /folder-files/:folderId/files/:fileId, should update a file description", async () => {
